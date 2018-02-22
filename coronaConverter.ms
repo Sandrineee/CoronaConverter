@@ -16,11 +16,18 @@
 	WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR 
 	COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR 
 	OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+	MODIFIED VERSION
+	dubcat fstorm support editon
 	
 	##########################################################################################################################
 	
 	supported materials:
 	- StandardMaterial
+	- FStorm
+	- FStormMixMat
+	- FStormOverrideMat
+	- FStormPortal
 	- VRayMtl
 	- VRayBlendMtl
 	- VRayLightMtl
@@ -45,6 +52,16 @@
 	- iray_material (by Michiel Quist)
 	
 	supported maps:
+	- FStormBitmap
+	- FStormColor
+	- FStormColorCorrection
+	- FStormDirt
+	- FStormFalloff
+	- FStormGradient
+	- FStormMix
+	- FStormMultiTex
+	- FStormNoise
+	- FStormSky
 	- VrayColor
 	- VrayDirt
 	- VrayNormalMap
@@ -65,6 +82,8 @@
 	- VRayLight
 	- VRayIES
 	- VRaySun
+	- FStormLight
+	- FStormSunLight
 	- mr_Sun
 	- mr_Sky_Portal
 	- miAreaLight
@@ -82,7 +101,10 @@
 	other:
 	- VrayProxy
 	- VrayDisplacementMod
+	- FStormDisplacement
 	
+	cameras:
+	- FStormCamera
 	
 	
 	TODO:
@@ -95,6 +117,8 @@
 	
 	
 	changelog:
+	*v1.412 - [2018/02/07] -----------------------------------------------------------------------------
+	- fstorm support
 	*v1.41 - [2018/01/30]------------------------------------------------------------------------------
 	- added support for VRayColor2Bump
 	- added simple VrayBumpMtl conversion
@@ -642,7 +666,19 @@
 					[0.32,0.15],[0.31,0.14],[0.3,0.13],[0.29,0.12],[0.28,0.11],[0.27,0.1],[0.26,0.09],[0.25,0.08],[0.24,0.06],[0.23,0.05],
 					[0.22,0.04],[0.21,0.03],[0.2,0.02],[0.19,0.01],[0.18,0.01],[0.17,0.01],[0.16,0.01],[0.15,0.01],[0.14,0.01],[0.13,0.01],
 					[0.12,0.01],[0.11,0.01],[0.1,0.01],[0.09,0.01],[0.08,0.01],[0.07,0.01],[0.06,0.01],[0.05,0.01],[0.04,0.01],[0.03,0.01],
-					[0.02,0.01],[0.01,0.01])
+					[0.02,0.01],[0.01,0.01]),
+					
+				fStormToCoronaTable = #([1.0,1.0],[0.99,0.99],[0.98,0.98],[0.97,0.96],[0.96,0.96],[0.95,0.96],[0.94,0.95],[0.93,0.94],
+					[0.92,0.94],[0.91,0.93],[0.9,0.92],[0.89,0.91],[0.88,0.91],[0.87,0.90],[0.86,0.89],[0.85,0.88],[0.84,0.88],[0.83,0.87],
+					[0.82,0.86],[0.81,0.86],[0.8,0.85],[0.79,0.84],[0.78,0.83],[0.77,0.83],[0.76,0.82],[0.75,0.81],[0.74,0.81],[0.73,0.8],
+					[0.72,0.79],[0.71,0.79],[0.7,0.78],[0.69,0.77],[0.68,0.77],[0.67,0.76],[0.66,0.75],[0.65,0.75],[0.64,0.74],[0.63,0.74],
+					[0.62,0.73],[0.61,0.72],[0.6,0.72],[0.59,0.71],[0.58,0.71],[0.57,0.7],[0.56,0.69],[0.55,0.69],[0.54,0.68],[0.53,0.67],
+					[0.52,0.67],[0.51,0.66],[0.5,0.66],[0.49,0.65],[0.48,0.64],[0.47,0.64],[0.46,0.63],[0.45,0.63],[0.44,0.62],[0.43,0.61],
+					[0.42,0.61],[0.41,0.61],[0.4,0.6],[0.39,0.59],[0.38,0.59],[0.37,0.58],[0.36,0.58],[0.35,0.57],[0.34,0.56],[0.33,0.56],
+					[0.32,0.55],[0.31,0.55],[0.3,0.54],[0.29,0.54],[0.28,0.53],[0.27,0.53],[0.26,0.52],[0.25,0.52],[0.24,0.51],[0.23,0.51],
+					[0.22,0.5],[0.21,0.49],[0.2,0.49],[0.19,0.48],[0.18,0.48],[0.17,0.47],[0.16,0.47],[0.15,0.46],[0.14,0.46],[0.13,0.45],
+					[0.12,0.45],[0.11,0.44],[0.1,0.44],[0.09,0.43],[0.08,0.43],[0.07,0.42],[0.06,0.42],[0.05,0.41],[0.04,41],[0.03,41],
+					[0.02,0.4],[0.01,0.39],[0.0,0.38])
 					
 			)
 			converterSettings()
@@ -679,18 +715,19 @@
 			(
 				owner,
 				-- used to determine which classes will be converted, important
-				supportedMtlClasses = #("StandardMaterial", "VRayMtl", "VRayBlendMtl", "VRayLightMtl", "VRay2SidedMtl", \
+				supportedMtlClasses = #("StandardMaterial", "FStorm", "FStormMixMat", "FStormOverrideMat", "FStormPortal", "VRayMtl", "VRayBlendMtl", "VRayLightMtl", "VRay2SidedMtl", \
 					"VRayCarPaintMtl", "VrayOverrideMtl", "VrayMtlWrapper", "Arch___Design__mi", "Car_Paint_Material__mi", \
 					"fR_Advanced", "fR_Architectural" , "Shellac", "Autodesk_Material", "VRayFastSSS", "VRayFastSSS2", \
 					"VRayHairMtl", "VRaySkinMtl", "RaytraceMaterial", "Architectural", "fR_Metal", "fR_Glass", "iray_Material", \
 					"VRayBumpMtl"),
-				supportedMapClasses = #("Bitmaptexture", "VrayColor", "VrayDirt", "Normal_Bump", "VrayNormalMap", "VraySky", \
+				supportedMapClasses = #("Bitmaptexture", "FStormBitmap", "FStormMix", "FStormMultiTex", "FStormNoise", "FStormSky", "FStormColor", "FStormColorCorrection", "FStormDirt", "FStormFalloff", "FStormGradient", "VrayColor", "VrayDirt", "Normal_Bump", "VrayNormalMap", "VraySky", \
 					"VRayCompTex", "VRayEdgesTex", "VRayGLSLTex", "VRaySoftbox", "Autodesk_Map", "Ambient_Reflective_Occlusion__3dsmax", \
 					"Multi_Sub_Map", "VRayHDRI", "VRayTriplanarTex", "VRayColor2Bump"),
 				-- NOT used to determine which classes will be converted, just for information purposes
-				supportedLightClasses = #("VRayLight", "VRaySun", "mrSun", "mr_Sky_Portal", "VRayIES", "miAreaLight", \
+				supportedLightClasses = #("VRayLight", "VRaySun", "FStormLight", "FStormSunLight", "mrSun", "mr_Sky_Portal", "VRayIES", "miAreaLight", \
 					"miAreaLightomni", "RectLight", "Free_Light", "Target_Light", "TargetDirectionallight", "freeSpot", \
 					"Directionallight", "Omnilight", "targetSpot", "Daylight Assemblies"),
+				supportedCameraClasses = #("FStormCamera"),
 				
 				--glossyConversionOutputMap = undefined,
 				glossyConversionOutputMapVrayBlinnCoronaClGgx = undefined,
@@ -767,6 +804,20 @@
 						crnMod.useWaterLevel = true
 						crnMod.waterLevel = (waterLvl - shift) / amount  -- ((amount + shift) - shift)
 					)
+					
+					crnMod
+				),
+				
+				private fn convertFrom_FStormDisplacement orig =(
+					crnMod = CoronaDisplacementMod()
+					crnMod.mapSource = 1
+					crnMod.texmap = orig.texture
+					
+					crnMod.levelMax = orig.power
+					
+					crnMod.waterLevel = orig.center
+					
+					crnMod.useWaterLevel = on
 					
 					crnMod
 				),
@@ -1000,6 +1051,13 @@
 					)
 				),
 				
+				fn convertFStormDisplacement =(
+					local allMods = (getclassinstances FStormDisplacement)
+					for dsplMod in allMods where (classof dsplMod == FStormDisplacement) do(
+						replaceInstances dsplMod (convertFrom_FStormDisplacement dsplMod)
+					)
+				),
+				
 				fn fixCoronaNormalGamma =(
 					with animate off (
 						for mp in (getClassInstances CoronaNormal) do(
@@ -1206,6 +1264,23 @@
 						pp[4].value = [1.0,1.0]
 						pp[4].intangent = [-0.06,-0.06]
 					)
+					#fStormToCorona: (
+						cc.numpoints = 4
+						pp = easyCCurve.cc.curves[1].points
+						pp.selected = on
+						
+						pp[1].value = [0,0.017]	
+						
+						pp[2].value = [0.38,0.01]	
+						pp[2].outtangent = [0.01,0.135]
+						
+						pp[3].value = [0.65,0.375]	
+						pp[3].intangent = [-0.25,-0.175]
+						pp[3].outtangent = [0.25,0.175]
+						
+						pp[4].value = [1.0,1.0]
+						pp[4].intangent = [-0.06,-0.06]
+					)
 					default: (  -- vray blinn to corona ggx (new)
 						cc.numpoints = 3
 						pp = easyCCurve.cc.curves[1].points
@@ -1341,7 +1416,7 @@
 					
 					--Opacity
 					r.levelOpacity= origMtl.opacity / 100.0 
-					r.colorOpacity=(color 255 255 255) 
+					r.colorOpacity=(color 255 255 255)
 					r.texmapOpacity=origMtl.opacityMap 
 					if r.texmapOpacity != undefined then(
 						r.texmapOnOpacity=origMtl.opacityMapEnable 
@@ -1377,6 +1452,190 @@
 				fn CreateDefaultCoronaMtl origMtl =(
 					r=CoronaMtl()
 					r.name=(if owner.converterSettings.addCoronaPrefix then owner.converterSettings.userPrefixStr else "") + origMtl.name
+					r
+				),
+
+				-- ############## FStorm Material ################
+				fn convertFrom_FStorm origMtl =(
+					
+					fn getfStormGlossiness vrGlossVal curve =(
+						local out
+						local run = true
+						local closest = 100.0
+						
+						if vrGlossVal < 0.0 then( out = 0.0; run = false)
+						if vrGlossVal > 1.0 then( out = 1.0; run = false)
+						
+						for dataPoint in curve while run do(
+							local diff = (abs (vrGlossVal - dataPoint.x))
+							if diff > closest then(
+								run = false
+							)else(
+								closest = diff
+								out = dataPoint.y
+							)
+						)
+						out
+					)
+					
+					r=CoronaMtl()
+					r.name=(if owner.converterSettings.addCoronaPrefix then owner.converterSettings.userPrefixStr else "") + origMtl.name
+					
+					--Diffuse
+					r.levelDiffuse = origMtl.diff_level 
+					r.colorDiffuse = origMtl.Diffuse
+					r.texmapDiffuse = origMtl.diffuse_tex
+					r.texmapOnDiffuse = origMtl.diffuse_tex_on 
+					r.mapamountDiffuse = origMtl.diffuse_tex_pow
+					
+					--Reflection
+					if origMtl.Reflection.value == 0 and origMtl.reflection_tex == undefined then
+					(
+						r.levelReflect = 0
+					)
+					r.levelReflect = origMtl.refl_level
+					r.colorReflect = origMtl.Reflection
+					r.texmapReflect = origMtl.reflection_tex
+					r.texmapOnReflect = origMtl.reflection_tex_on
+					r.mapamountReflect = origMtl.reflection_tex_pow
+					
+					--IOR
+					r.fresnelIor = origMtl.ior
+					r.texmapFresnelIor = origMtl.ior_tex
+					r.texmapOnFresnelIor = origMtl.ior_tex_on
+					r.mapamountFresnelIor = origMtl.ior_tex_pow
+					
+					--Reflection Glossiness
+					if origMtl.refl_glossiness_invert == on then
+					(
+						r.reflectGlossiness = getfStormGlossiness (1 - origMtl.refl_glossiness) owner.converterSettings.fStormToCoronaTable 
+					)
+					else
+					(
+						r.reflectGlossiness = getfStormGlossiness origMtl.refl_glossiness owner.converterSettings.fStormToCoronaTable 
+					)
+					r.texmapReflectGlossiness = origMtl.reflection_glossy_tex
+					r.texmapOnReflectGlossiness = origMtl.reflection_glossy_tex_on
+					r.mapamountReflectGlossiness = origMtl.reflection_glossy_tex_pow
+					
+					--Refraction
+					if origMtl.Refraction.value == 0 and origMtl.refraction_tex == undefined then
+					(
+						r.levelRefract = 0
+					)
+					else
+					r.levelRefract = origMtl.refr_level
+					r.colorRefract = origMtl.Refraction
+					r.texmapRefract = origMtl.refraction_tex
+					r.texmapOnRefract = origMtl.refraction_tex_on
+					r.mapamountRefract = origMtl.refraction_tex_pow
+
+					--Dispersion
+					if origMtl.refr_dispersion > 0 then
+					(
+						r.refractDispersionEnable =  on
+					)
+					
+					-- Refraction Glossiness
+					if origMtl.refr_glossiness_invert == on then
+					(
+						r.refractGlossiness = 1 - origMtl.refr_glossiness
+					)
+					else
+					(
+						r.refractGlossiness = origMtl.refr_glossiness
+					)
+					r.texmapRefractGlossiness = origMtl.refraction_glossy_tex
+					r.texmapOnRefractGlossiness = origMtl.refraction_glossy_tex_on
+					r.mapamountRefract = origMtl.refraction_glossy_tex_pow
+
+					--Opacity
+					r.levelOpacity = origMtl.opacity
+					r.texmapOpacity = origMtl.opacity_tex
+					
+					--Bumpmap
+					if origMtl.bump_extra_mult == 0 then
+					(
+						r.mapamountBump = origMtl.bump_texture_amount
+					)
+					else if origMtl.bump_extra_mult == 1 then
+					(
+						r.mapamountBump = origMtl.bump_texture_amount / 10
+					)
+					else if origMtl.bump_extra_mult == 2 then
+					(
+						r.mapamountBump = origMtl.bump_texture_amount / 100
+					)
+					else if origMtl.bump_extra_mult == 3 then
+					(
+						r.mapamountBump = origMtl.bump_texture_amount / 1000
+					)
+					r.texmapOnBump = origMtl.bump_texture_on
+					r.texmapBump = origMtl.bump_texture
+
+					--Absorption
+					r.absorptionDistance = origMtl.volume_distance
+					r.absorptionColor = origMtl.volume_absorption
+					r.scatterColor = origMtl.volume_scattering
+
+					--Translucency
+					if origMtl.translucence.value == 0 and origMtl.translucence_tex == undefined then
+					(
+						r.levelTranslucency = 0
+					)
+					else
+					r.levelTranslucency = origMtl.traslucence_level * 0.4
+					r.colorTranslucency = origMtl.translucence
+					r.texmapOnTranslucency = origMtl.translucence_tex_on
+					r.texmapTranslucency = origMtl.translucence_tex
+					r.mapamountTranslucency = origMtl.translucence_tex_pow
+
+					--SelfIllumination
+					r.levelSelfIllum = origMtl.emission_power
+					r.colorSelfIllum = origMtl.emission
+					r.texmapOnSelfIllum = origMtl.emission_texture_on
+					r.texmapSelfIllum = origMtl.emission_texture
+					r.mapamountSelfIllum = origMtl.emission_texture_amount
+					
+					r
+				),
+				
+				-- ############## FStorm Mix Material ################
+				fn convertFrom_FStormMixMat origMtl =(
+										
+					r=CoronaLayeredMtl()
+					r.name=(if owner.converterSettings.addCoronaPrefix then owner.converterSettings.userPrefixStr else "") + origMtl.name
+					
+					r.baseMtl = origMtl.material1
+					r.Layers[1] = origMtl.material2
+					r.mixmaps[1] = origMtl.mixTexture
+					
+					r.masksOn[1] = origMtl.mixtexture_on
+					r.maskAmounts[1] = origMtl.mixvalue
+					
+					r
+				),
+				
+				-- ############## FStorm Override Material ################
+				fn convertFrom_FStormOverrideMat origMtl =(
+										
+					r=CoronaRaySwitchMtl()
+					r.name=(if owner.converterSettings.addCoronaPrefix then owner.converterSettings.userPrefixStr else "") + origMtl.name
+					
+					r.directMtl = origMtl.base
+					r.giMtl = origMtl.GI
+					r.reflectMtl = origMtl.Reflection
+					r.refractMtl = origMtl.Refraction
+					
+					r
+				),
+				
+				-- ############## FStorm Portal Material ################
+				fn convertFrom_FStormPortal origMtl =(
+										
+					r=CoronaPortalMtl()
+					r.name=(if owner.converterSettings.addCoronaPrefix then owner.converterSettings.userPrefixStr else "") + origMtl.name
+					
 					r
 				),
 				
@@ -3006,6 +3265,448 @@
 					r
 				),	
 				
+				-- ############## FStormBitmap ################
+				fn convertFrom_FStormBitmap origMap =(
+					r = CoronaBitmap()
+					r.name = origMap.name
+					
+					-- filename
+					if origMap.bitmap != "" and origMap.bitmap != undefined then
+					( 
+						r.filename = origMap.bitmap.filename
+					)
+
+					-- Gamma handling
+					if origMap.gamma == 2.2 then
+					(
+                        r.gamma = 1.0
+					)
+					else
+					(
+                        r.gamma = 2.2
+					)
+                    
+					-- World XYZ
+					-- Object XYZ
+					-- Object UVW
+					
+					-- Spherical
+					if origMap.mapping == 3 then
+					(
+						r.enviroMapping = 0
+						r.uvwScale = origMap.tiling *= [-1,1,1]
+						r.uvwOffset = origMap.offset += [0.28,0,0]
+                    )
+					
+					-- Screen
+					if origMap.mapping == 4 then
+					(
+						r.enviroMapping = 1
+                    )
+					
+					-- uv channel
+					r.uvwChannel = origMap.map_channel
+					
+					-- real world button
+					r.realWorldScale = origMap.real_world
+					
+					-- offset, tiling/scale, rotation, rw mapscale
+					if r.realWorldScale == on then
+					(
+						r.uvwScale = origMap.tiling_world
+					)
+					else
+					(
+						r.uvwScale = origMap.tiling
+					)
+					
+					-- offset
+					if r.realWorldScale == on then
+					(
+						r.uvwOffset = origMap.offset_world
+					)
+					else
+					(
+						r.uvwOffset = origMap.offset
+					)
+					
+					-- Tiling modes
+					-- Repeat Tiling
+					if origMap.border[1] == 0 then (
+					r.tilingU = 1
+					)
+					
+					if origMap.border[2] == 0 then (
+					r.tilingV = 1
+					)
+					
+					-- Mirror Tiling
+					if origMap.border[1] == 1 then (
+					r.tilingU = 2
+					)
+					
+					if origMap.border[2] == 1 then (
+					r.tilingV = 2
+					)
+
+					-- rotation angle
+					r.wAngle = origMap.rotation[3]
+					
+					-- invert
+					r.output.invert = origMap.inverted
+					
+					-- crop
+					r.clippingOn = origMap.crop_on
+					r.clippingU = origMap.crop_u
+					r.clippingV = origMap.crop_v
+					r.clippingWidth = origMap.crop_w
+					r.clippingHeight = origMap.crop_h
+					
+					r.filteringBlur = 0.01
+					
+					r
+				),
+				
+				-- ############## FStormMix ################
+				fn convertFrom_FStormMix origMap = (
+					r = CoronaMix()
+					r.name = origMap.name
+					
+					r.mixInSRgb = off
+					
+					r.colorBottom = origMap.color1
+					r.colorTop = origMap.color2
+					r.mixAmount = origMap.mask_color.value/255
+					
+					r.texmapBottom = origMap.texture1
+					r.texmapTop = origMap.texture2
+					r.texmapMix = origMap.mask_texture
+					
+					r.texmapBottomOn = origMap.texture1_on
+					r.texmapTopOn = origMap.texture2_on
+					r.texmapMixOn = origMap.mask_texture_on
+					
+					-- normal
+					if origMap.mix_mod == 0 then
+					(
+						r.mixOperation = 6
+					)
+					
+					-- addition
+					if origMap.mix_mod == 1 then
+					(
+						r.mixOperation = 0
+					)
+					
+					-- subtract
+					if origMap.mix_mod == 2 then
+					(
+						r.mixOperation = 1
+					)
+					
+					-- multiply
+					if origMap.mix_mod == 3 then
+					(
+						r.mixOperation = 2
+					)
+					
+					-- divide
+					if origMap.mix_mod == 4 then
+					(
+						r.mixOperation = 3
+					)
+					
+					-- darken
+					if origMap.mix_mod == 5 then
+					(
+						r.mixOperation = 4
+					)
+					
+					-- lighten
+					if origMap.mix_mod == 6 then
+					(
+						r.mixOperation = 5
+					)
+					
+					-- screen
+					if origMap.mix_mod == 7 then
+					(
+						r.mixOperation = 9
+					)
+					
+					-- overlay
+					if origMap.mix_mod == 8 then
+					(
+						r.mixOperation = 10
+					)
+					
+					-- hard light
+					if origMap.mix_mod == 9 then
+					(
+						r.mixOperation = 16
+					)
+					
+					-- soft light
+					if origMap.mix_mod == 10 then
+					(
+						r.mixOperation = 15
+					)
+					
+					-- color burn
+					if origMap.mix_mod == 11 then
+					(
+						r.mixOperation = 12
+					)
+					
+					-- color dodge
+					if origMap.mix_mod == 12 then
+					(
+						r.mixOperation = 11
+					)
+					
+					r
+				),
+				
+				-- ############## FStormMultiTex ################
+				fn convertFrom_FStormMultiTex origMap = (
+					r = CoronaMultiMap()
+					r.name = origMap.name
+					
+					r.items = origMap.num_ids
+					
+					-- material id
+					if origMap.id_source == 0 then
+					(
+						r.mode = 3
+					)
+					
+					-- object id
+					if origMap.id_source == 1 then
+					(
+						r.mode = 5
+					)
+					
+					for i = 0 to origMap.num_ids do
+					(
+						r.colors[i+1] = origMap.colors[i+1]
+						r.texmaps[i+1] = origMap.textures[i+1]
+					)
+						
+					r
+				),
+				
+				-- ############## FStormNoise ################
+				fn convertFrom_FStormNoise origMap = (
+					r = Noise()
+					r.name = origMap.name
+					
+					r.type = 1
+					
+					r.coords.offset = origMap.offset
+					
+					r.coords.tiling = origMap.tiling
+
+					r.coords.angle = origMap.rotation
+					
+					r.size = origMap.size
+					
+					r.Levels = origMap.iterations
+
+					r
+				),
+				
+				-- ############## FStormSky ################
+				fn convertFrom_FStormSky origMap = (
+					r = CoronaSky()
+					r.name = origMap.name
+					
+					r
+				),
+				
+				-- ############## FStormColor ################
+				fn convertFrom_FStormColor origMap = (
+					r = CoronaColor()
+					r.name = origMap.name
+					
+					r.color = origMap.color
+					r.colorHdr = origMap.rgb
+					r.temperature = origMap.temperature
+					r.multiplier = origMap.multiplier
+					
+					r
+				),
+				
+				-- ############## FStormColorCorrection ################
+				fn convertFrom_FStormColorCorrection origMap = (
+					r = Color_Correction()
+					r.name = origMap.name
+					
+					r.map = origMap.input
+					
+					-- Advanced Mode
+					r.lightnessMode = 1
+					
+					-- Invert
+					if origMap.invert == on then
+					(
+						r.rewireMode = 2
+						r.rewireR = 4
+						r.rewireG = 5
+						r.rewireB = 6
+						r.rewireA = 3
+					)
+					
+					r.gammaRGB = origMap.gamma
+					
+					-- Saturation
+					if origMap.saturation == 1 then
+					(
+						r.saturation = 0
+					)
+					else if origMap.saturation == 0 then
+					(
+						r.saturation = -100
+					)
+					else
+					(
+						r.saturation = 1 - (100 - (origMap.saturation * 100))
+					)
+					
+					-- Offset
+					if origMap.offset == 0.5 then
+					(
+						r.gainRGB = 100
+					)
+					else if origMap.offset == 0.001 then
+					(
+						r.gainRGB = 0
+					)
+					else if origMap.offset < 0.5 then
+					(
+						r.gainRGB = origMap.offset * 130
+					)
+					else
+					(
+						r.gainRGB = origMap.offset * 235
+					)
+					
+					r
+				),
+				
+				-- ############## FStormDirt ################
+				fn convertFrom_FStormDirt origMap = (
+					r = CoronaAO()
+					r.name = origMap.name
+					
+					r.maxDistance = origMap.radius
+					r.normalMode = 2
+					r.texmapDistance = origMap.radius_texture
+					r.texmapDistanceOn = origMap.radius_texture_on
+					r.directionOffsets = origMap.direction
+					
+					r
+				),
+				
+				-- ############## FStormFalloff ################
+				fn convertFrom_FStormFalloff origMap = (
+					r = Falloff()
+					r.name = origMap.name
+					
+					r.type = 2
+					
+					if origMap.type == 1 then
+					(
+						r.ior = origMap.ior
+					)
+					
+					if origMap.type == 0 then
+					(
+						r.ior = 1.15
+						r.texture_output.invert = true
+					)
+					
+					r
+				),
+				
+				-- ############## FStormGradient ################
+				fn convertFrom_FStormGradient origMap = (
+					r = Gradient_Ramp()
+					r.name = origMap.name
+					
+					-- world XYZ
+					if origMap.mapping == 0 then
+					(
+						r.coordinates.mapping = 3
+					)
+					
+					-- object XYZ
+					if origMap.mapping == 1 then
+					(
+						r.coordinates.mapping = 2
+					)
+					
+					-- object UVW
+					if origMap.mapping == 2 then
+					(
+						r.coordinates.mapping = 0
+					)
+					
+					-- spherical environment
+					if origMap.mapping == 3 then
+					(
+						r.coordinates.mappingType = 1 -- Environ
+						r.coordinates.mapping = 0 -- spherical
+					)
+					
+					r.coordinates.mapChannel = origMap.map_channel
+					
+					r.coordinates.U_Offset = origMap.offset[1]
+					r.coordinates.V_Offset = origMap.offset[2]
+					
+					r.coordinates.U_Tiling = origMap.tiling[1]
+					r.coordinates.V_Tiling = origMap.tiling[2]
+					
+					if origMap.mirror[1] == on then
+					(
+						r.coordinates.U_Mirror = true
+					)
+					
+					if origMap.mirror[2] == on then
+					(
+						r.coordinates.V_Mirror = true
+					)
+
+					r.coordinates.U_Angle = origMap.rotation[1]
+					r.coordinates.V_Angle = origMap.rotation[2]
+					r.coordinates.W_Angle = origMap.rotation[3]
+				
+					-- type linear
+					if origMap.type == 0 then
+					(
+						r.Gradient_Type = 4
+					)
+					
+					-- type box
+					if origMap.type == 1 then
+					(
+						r.Gradient_Type = 1
+					)
+					
+					-- type radial
+					if origMap.type == 2 then
+					(
+						r.Gradient_Type = 8
+					)
+					
+					-- type spiral
+					if origMap.type == 3 then
+					(
+						r.Gradient_Type = 9
+					)
+					
+					r
+				),
+				
 				-- ############## VrayHDRI ################
 				fn convertFrom_VrayHDRI origMap =(
 					r = BitmapTexture()
@@ -3416,10 +4117,119 @@
 			mapConvMethods owner:this
 		),
 		
+		cameraConvMethods =(
+			struct cameraConvMethods 
+			(
+				owner,
+				
+				-- ############## FStormCamera ################
+				fn convertFrom_FStormCamera origCamera = (
+					r=PhysCamera()
+					r.name=origCamera.name
+					
+					r
+				)
+			)
+			cameraConvMethods owner:this
+		),
+				
 		lightConvMethods =(
 			struct lightConvMethods 
 			(
 				owner,
+				
+				-- ############## FStormLight ################
+				fn convertFrom_FStormLight origLight = (
+					r=CoronaLight()
+					r.name=(if owner.converterSettings.addCoronaPrefix then owner.converterSettings.userPrefixStr else "") + origLight.name
+					doNotConvert = false
+					
+					r.intensityUnits = 0
+					r.on = origLight.enabled
+					r.visibleDirectly = origLight.visible
+					r.targeted = origLight.targeted
+					
+					-- color
+					if origLight.color_type == 0 then
+					(
+						r.colorMode = 0
+						r.color = origLight.color
+					)
+					
+					-- temperature
+					if origLight.color_type == 1 then
+					(
+						r.colorMode = 1
+						r.blackbodyTemp = origLight.temperature
+					)
+					
+					-- texture
+					if origLight.color_type == 2 then
+					(
+						r.colorMode = 2
+						r.texmap = origLight.texture
+					)
+					
+					-- plane
+					if origLight.shape == 0 then
+					(
+						r.shape = 1
+						r.width = origLight.size_x
+						r.height = origLight.size_y
+						r.twosidedEmission = origLight.double_sided
+						
+						if origLight.directional == on then
+						(
+							r.directionality = 1-origLight.directional_angle*0.0055555555555556
+						)
+					)
+					
+					-- disk
+					if origLight.shape == 1 then
+					(
+						r.shape = 2
+						r.width = origLight.size_x
+						r.twosidedEmission = origLight.double_sided
+						
+						if origLight.directional == on then
+						(
+							r.directionality = 1-origLight.directional_angle*0.0055555555555556
+						)
+					)
+					
+					-- sphere
+					if origLight.shape == 2 then
+					(
+						r.shape = 0
+						r.width = origLight.size_x
+					)
+					
+					-- IES
+					if origLight.shape == 3 then
+					(
+						r.shape = 0
+						r.width = origLight.size_x
+						
+						r.iesOn = origLight.ies_enabled
+						r.iesFile = origLight.ies
+					)
+					
+					r
+				),
+				
+				-- ############## FStormSunLight ################
+				fn convertFrom_FStormSunLight origLight = (
+					r=CoronaSun()
+					r.name=(if owner.converterSettings.addCoronaPrefix then owner.converterSettings.userPrefixStr else "") + origLight.name
+					doNotConvert = false
+					
+					r.on = origLight.enabled
+					r.targeted = origLight.targeted
+					r.intensity = origLight.power
+					r.sizeMultiplier = origLight.size
+					
+					r
+				),
 				
 				-- ############## VrayLight ################
 				fn convertFrom_VrayLight origLight = (
@@ -3891,6 +4701,16 @@
 			cls=classof orig_map
 			
 			local new_map=case cls of (
+				FStormBitmap: errorCatching mapConvMethods.convertFrom_FStormBitmap orig_map
+				FStormMix: errorCatching mapConvMethods.convertFrom_FStormMix orig_map
+				FStormMultiTex: errorCatching mapConvMethods.convertFrom_FStormMultiTex orig_map
+				FStormColor: errorCatching mapConvMethods.convertFrom_FStormColor orig_map
+				FStormColorCorrection: errorCatching mapConvMethods.convertFrom_FStormColorCorrection orig_map
+				FStormDirt: errorCatching mapConvMethods.convertFrom_FStormDirt orig_map
+				FStormFalloff: errorCatching mapConvMethods.convertFrom_FStormFalloff orig_map
+				FStormGradient: errorCatching mapConvMethods.convertFrom_FStormGradient orig_map
+				FStormNoise: errorCatching mapConvMethods.convertFrom_FStormNoise orig_map
+				FStormSky: errorCatching mapConvMethods.convertFrom_FStormSky orig_map
 				VrayColor: errorCatching mapConvMethods.convertFrom_VrayColor orig_map
 				VrayDirt: errorCatching mapConvMethods.convertFrom_VrayDirt orig_map
 				VrayNormalMap: errorCatching mapConvMethods.convertFrom_VrayNormalMap orig_map
@@ -3948,6 +4768,10 @@
 			cls=classof orig_mtl
 			local new_mtl=case cls of (
 				StandardMaterial: errorCatching matConvMethods.convertFrom_Standard orig_mtl
+				FStorm: errorCatching matConvMethods.convertFrom_FStorm orig_mtl
+				FStormMixMat: errorCatching matConvMethods.convertFrom_FStormMixMat orig_mtl
+				FStormOverrideMat: errorCatching matConvMethods.convertFrom_FStormOverrideMat orig_mtl
+				FStormPortal: errorCatching matConvMethods.convertFrom_FStormPortal orig_mtl
 				VRayMtl: errorCatching matConvMethods.convertFrom_VrayMtl orig_mtl
 				VRayBlendMtl: errorCatching matConvMethods.convertFrom_VrayBlendMtl orig_mtl
 				VRayLightMtl: errorCatching matConvMethods.convertFrom_VrayLightMtl orig_mtl 
@@ -4012,9 +4836,11 @@
 				Omnilight: errorCatching lightConvMethods.convertFrom_StandardLights orig_light 
 				targetSpot: errorCatching lightConvMethods.convertFrom_StandardLights orig_light 
 				
-				VrayLight: errorCatching lightConvMethods.convertFrom_VrayLight orig_light 
-				VRayIES: errorCatching lightConvMethods.convertFrom_VrayIES orig_light 
-				VraySun: errorCatching lightConvMethods.convertFrom_VraySun orig_light 
+				VrayLight: errorCatching lightConvMethods.convertFrom_VrayLight orig_light
+				VRayIES: errorCatching lightConvMethods.convertFrom_VrayIES orig_light
+				VraySun: errorCatching lightConvMethods.convertFrom_VraySun orig_light
+				FStormLight: errorCatching lightConvMethods.convertFrom_FStormLight orig_light
+				FStormSunLight: errorCatching lightConvMethods.convertFrom_FStormSunLight orig_light
 				miAreaLight: errorCatching lightConvMethods.convertFrom_miAreaLight orig_light 
 				miAreaLightomni: errorCatching lightConvMethods.convertFrom_miAreaLight orig_light 
 				mr_Sky_Portal: errorCatching lightConvMethods.convertFrom_mrSkyPortal orig_light
@@ -4291,6 +5117,7 @@
 			button btnFixOpacityMapsMono "Fix opacity maps w. \"Mono Channel Output\" on" pos:(lastPos += [-200,26]) width:240  height:20 tooltip:"Opacity bitmaps that are using the \"Mono Channel Output\" option are rendered using the RGB channels (not the alpha) in Corona. This tool tries to fix those issue where possible. \nPrimarily used in materials for leafs."
 			button btnFixCoronaNormalGamma "Fix CoronaNormal gamma value" pos:(lastPos += [0,24]) width:240  height:20 tooltip:"Checks if the gamma warning is displayed and switches the \"Add gamma to input\" checkbox on or off. Only works if input gamma is either 1.0 or 2.2"
 			button btnConvertVrayDisplacementMods "Convert VrayDisplacementMod modifiers" pos:(lastPos += [0,24]) width:240  height:20 tooltip:"Replaces VrayDisplacementMod modifiers with CoronaDisplacementMod modifiers"
+			button btnConvertFStormDisplacement "Convert fStorm Displacement modifiers" pos:(lastPos += [0,24]) width:240  height:20 tooltip:"Replaces fStormDisplacement modifiers with CoronaDisplacementMod modifiers"
 			button btnConvBitmapToCoronaBitmap "Bitmap > CoronaBitmap" pos:(lastPos += [0,24]) width:120  height:20 tooltip:"Converts Bitmaptexture maps to CoronaBitmap"
 			button btnConvCoronaBitmapToBitmap "CoronaBitmap > Bitmap" pos:(lastPos + [120,0]) width:120  height:20 tooltip:"Converts CoronaBitmap maps back to Bitmaptexture maps"
 			button btnOnlineCheck "Check online for new converter versions" pos:(lastPos += [0,24]) width:240  height:20 tooltip:"Opens a window with info about available converter versions"
@@ -4417,6 +5244,10 @@
 			
 			on btnConvertVrayDisplacementMods pressed do(
 				owner.converterTools.convertVrayDisplacementMods()
+			)
+			
+			on btnConvertFStormDisplacement pressed do(
+				owner.converterTools.convertFStormDisplacement()
 			)
 			
 			on btnConvBitmapToCoronaBitmap pressed do(
