@@ -720,7 +720,7 @@
 					"fR_Advanced", "fR_Architectural" , "Shellac", "Autodesk_Material", "VRayFastSSS", "VRayFastSSS2", \
 					"VRayHairMtl", "VRaySkinMtl", "RaytraceMaterial", "Architectural", "fR_Metal", "fR_Glass", "iray_Material", \
 					"VRayBumpMtl"),
-				supportedMapClasses = #("Bitmaptexture", "FStormBitmap", "FStormMix", "FStormMultiTex", "FStormNoise", "FStormSky", "FStormColor", "FStormColorCorrection", "FStormDirt", "FStormFalloff", "FStormGradient", "VrayColor", "VrayDirt", "Normal_Bump", "VrayNormalMap", "VraySky", \
+				supportedMapClasses = #("Bitmaptexture", "FStormBitmap", "FStormMix", "FStormOutput", "FStormMultiTex", "FStormNoise", "FStormSky", "FStormColor", "FStormColorCorrection", "FStormDirt", "FStormFalloff", "FStormGradient", "VrayColor", "VrayDirt", "Normal_Bump", "VrayNormalMap", "VraySky", \
 					"VRayCompTex", "VRayEdgesTex", "VRayGLSLTex", "VRaySoftbox", "Autodesk_Map", "Ambient_Reflective_Occlusion__3dsmax", \
 					"Multi_Sub_Map", "VRayHDRI", "VRayTriplanarTex", "VRayColor2Bump"),
 				-- NOT used to determine which classes will be converted, just for information purposes
@@ -3467,6 +3467,16 @@
 					r
 				),
 				
+				-- ############## FStormOutput ################
+				fn convertFrom_FStormOutput origMap = (
+					r = Output()
+					r.name = origMap.name
+					
+					r.map1 = origMap.input
+					
+					r
+				),
+				
 				-- ############## FStormMultiTex ################
 				fn convertFrom_FStormMultiTex origMap = (
 					r = CoronaMultiMap()
@@ -4703,6 +4713,7 @@
 			local new_map=case cls of (
 				FStormBitmap: errorCatching mapConvMethods.convertFrom_FStormBitmap orig_map
 				FStormMix: errorCatching mapConvMethods.convertFrom_FStormMix orig_map
+				FStormOutput: errorCatching mapConvMethods.convertFrom_FStormOutput orig_map
 				FStormMultiTex: errorCatching mapConvMethods.convertFrom_FStormMultiTex orig_map
 				FStormColor: errorCatching mapConvMethods.convertFrom_FStormColor orig_map
 				FStormColorCorrection: errorCatching mapConvMethods.convertFrom_FStormColorCorrection orig_map
